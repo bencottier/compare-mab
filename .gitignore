@@ -1,4 +1,7 @@
 *.png
 *.jpg
 *.jpeg
+*.pyc
+*.pdf
+*.vscode
 

@@ -31,6 +31,24 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import agents
+
+
+class Bandit:
+
+    def __init__(self, bandit_probs, num_trials=1):
+        self.N = len(bandit_probs)  # number of bandits
+        self.prob = bandit_probs  # success probabilities for each bandit
+        self.num_trials = num_trials
+
+    # Get reward (1 for success, 0 for failure)
+    def get_reward(self, action):
+        rand = np.random.random()  # [0.0,1.0)
+        reward = 0
+        for _ in range(self.num_trials):
+            reward += 1 if (rand < self.prob[action]) else 0
+        return reward
+
 
 def main():
     # =========================
@@ -40,47 +58,9 @@ def main():
                     0.25, 0.60, 0.45, 0.75, 0.65]  # bandit probabilities of success
     N_experiments = 100  # number of experiments to perform
     N_episodes = 10000  # number of episodes per experiment
-    epsilon = 0.1  # probability of random exploration (fraction)
+    epsilon = 0.1  # probability of random exploration (fraction) TODO
     save_fig = True  # if false -> plot, if true save as file in same directory
-
-    # =========================
-    # Define Bandit and Agent class
-    # =========================
-    class Bandit:
-
-        def __init__(self, bandit_probs):
-            self.N = len(bandit_probs)  # number of bandits
-            self.prob = bandit_probs  # success probabilities for each bandit
-
-        # Get reward (1 for success, 0 for failure)
-        def get_reward(self, action):
-            rand = np.random.random()  # [0.0,1.0)
-            reward = 1 if (rand < self.prob[action]) else 0
-            return reward
-
-    class Agent:
-
-        def __init__(self, bandit, epsilon):
-            self.epsilon = epsilon
-            self.k = np.zeros(bandit.N, dtype=np.int)  # number of times action was chosen
-            self.Q = np.zeros(bandit.N, dtype=np.float)  # estimated value
-
-        # Update Q action-value using:
-        # Q(a) <- Q(a) + 1/(k+1) * (r(a) - Q(a))
-        def update_Q(self, action, reward):
-            self.k[action] += 1  # update action counter k -> k+1
-            self.Q[action] += (1./self.k[action]) * (reward - self.Q[action])
-
-        # Choose action using an epsilon-greedy agent
-        def get_action(self, bandit, force_explore=False):
-            rand = np.random.random()  # [0.0,1.0)
-            if (rand < self.epsilon) or force_explore:
-                action_explore = np.random.randint(bandit.N)  # explore random bandit
-                return action_explore
-            else:
-                #action_greedy = np.argmax(self.Q)  # exploit best current bandit
-                action_greedy = np.random.choice(np.flatnonzero(self.Q == self.Q.max()))
-                return action_greedy
+    agent_type = "greedy_10trial"  # To keep track of different experiments TODO
 
     # =========================
     # Define an experiment
@@ -106,12 +86,13 @@ def main():
     #
     # =========================
     N_bandits = len(bandit_probs)
-    print("Running multi-armed bandits with N_bandits = {} and agent epsilon = {}".format(N_bandits, epsilon))
+    print("Running multi-armed bandits with N_bandits = {}, agent = {}, epsilon = {}".format(
+            N_bandits, agent_type, epsilon))
     reward_history_avg = np.zeros(N_episodes)  # reward history experiment-averaged
     action_history_sum = np.zeros((N_episodes, N_bandits))  # sum action history
     for i in range(N_experiments):
         bandit = Bandit(bandit_probs)  # initialize bandits
-        agent = Agent(bandit, epsilon)  # initialize agent
+        agent = agents.EpsilonGreedyAgent(bandit, epsilon)  # initialize agent TODO
         (action_history, reward_history) = experiment(agent, bandit, N_episodes)  # perform experiment
 
         if (i + 1) % (N_experiments / 100) == 0:
@@ -131,19 +112,20 @@ def main():
 
     reward_history_avg /= np.float(N_experiments)
     print("reward history avg = {}".format(reward_history_avg))
+    print("grand total avg = {}".format(np.mean(reward_history_avg)))
 
     # =========================
     # Plot reward history results
     # =========================
     plt.plot(reward_history_avg)
     plt.xlabel("Episode number")
-    plt.ylabel("Rewards collected".format(N_experiments))
+    plt.ylabel("Rewards collected")
     plt.title("Bandit reward history averaged over {} experiments (epsilon = {})".format(N_experiments, epsilon))
     ax = plt.gca()
     ax.set_xscale("log", nonposx='clip')
     plt.xlim([1, N_episodes])
     if save_fig:
-        output_file = "output/rewards.png"
+        output_file = "output/rewards_{}_{}.png".format(agent_type, epsilon)
         plt.savefig(output_file, bbox_inches="tight")
     else:
         plt.show()
@@ -171,7 +153,7 @@ def main():
     for legobj in leg.legendHandles:
         legobj.set_linewidth(16.0)
     if save_fig:
-        output_file = "output/actions.png"
+        output_file = "output/actions_{}_{}.png".format(agent_type, epsilon)
         plt.savefig(output_file, bbox_inches="tight")
     else:
         plt.show()
