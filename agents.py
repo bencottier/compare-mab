@@ -26,7 +26,7 @@ class Agent:
     def update_Q(self, action, reward):
         self.k[action] += 1  # update action counter k -> k+1
         self.Q[action] += (1./self.k[action]) * (reward - self.Q[action])
-        if self.param != 0:  # annealing exploration
+        if abs(self.anneal) > 0 and self.param != 0:  # annealing exploration
             self.param = max(0, self.param - self.anneal)
 
 
@@ -54,12 +54,14 @@ class Exp3Agent(Agent):
     """
     Chooses an action with probabilities weighted exponentially with 
     respect to past reward, biased with uniform probability for exploration.
+
+    Exp3 = Exponential weighting for Exploration and Exploitation
     """
 
-    def __init__(self, bandit, gamma, anneal):
+    def __init__(self, bandit, gamma):
         self.ws = np.ones(bandit.N, dtype=np.float64)  # weights
         self.ps = np.ones(bandit.N, dtype=np.float64)  # probabilities
-        super(Exp3Agent, self).__init__(bandit, gamma, anneal)
+        super(Exp3Agent, self).__init__(bandit, gamma)
 
     def get_action(self, bandit):
         # Set the probability of choosing each arm
@@ -77,11 +79,13 @@ class FPLAgent(Agent):
     """
     Chooses the best action based on cumulative reward perturbed by 
     exponential random noise.
+
+    FPL = Follow the Perturbed Leader
     """
 
-    def __init__(self, bandit, lam, anneal):
+    def __init__(self, bandit, lam):
         self.z = np.zeros(bandit.N)
-        super(FPLAgent, self).__init__(bandit, lam, anneal)
+        super(FPLAgent, self).__init__(bandit, lam)
 
     def get_action(self, bandit):
         # Generate exponential random noise for each arm
@@ -94,3 +98,27 @@ class FPLAgent(Agent):
         self.k[action] += 1
         self.Q[action] += reward  # simply accumulate reward for each action
 
+
+class UCBAgent(Agent):
+    """
+    Chooses the action that maximises an optimistic estimate of the 
+    average reward.
+
+    UCB = Upper Confidence Bound
+    """
+    
+    def __init__(self, bandit, c=1.0):
+        super(UCBAgent, self).__init__(bandit, c)
+
+    def get_action(self, bandit):
+        t = np.sum(self.k)
+        if t < bandit.N:
+            # Visit all available states initially
+            # This is what would happen anyway in the limit of k -> 0
+            # For the usual formula below
+            # This is a way of avoiding division by 0
+            return t  
+        else:
+            f = 1 + t * (math.log(t))**2
+            v = self.Q + self.param * np.sqrt(2 * math.log(f) * 1. / self.k)
+            return np.argmax(v)
