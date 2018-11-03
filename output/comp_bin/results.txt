@@ -1,0 +1,26 @@
+N_bandits = 10
+bandit_probs = [0.1, 0.5, 0.6, 0.8, 0.1, 0.25, 0.6, 0.45, 0.75, 0.65]
+N_experiments = 1000
+N_episodes = 10000
+epsilon = 0.1
+
+ex3
+reward_avg = 0.7410571
+reward_std = 0.04615852076908445
+
+exc
+reward_avg = 0.7589545000000001
+reward_std = 0.12094812040602368
+
+egd
+reward_avg = 0.7599537000000001
+reward_std = 0.0189479011056634
+
+ucb
+reward_avg = 0.7768430000000001
+reward_std = 0.01901817422887908
+
+fpl
+reward_avg = 0.7264984999999998
+reward_std = 0.02661642721610097
+

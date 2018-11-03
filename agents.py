@@ -1,8 +1,8 @@
 """
 
-agent.py (author: Ben Cottier / git: bencottier)
+agents.py (author: Ben Cottier / git: bencottier)
 
-Defines several RL agents capable of solving a multi-arm bandit problem.
+Defines RL agents capable of solving a multi-arm bandit problem.
 
 """
 import numpy as np
@@ -30,10 +30,40 @@ class Agent:
             self.param = max(0, self.param - self.anneal)
 
 
+class ExploreCommitAgent(Agent):
+    """
+    Initially explores, repeating all available actions evenly,
+    then commits to the best action estimated immediately after.
+    """
+    def __init__(self, bandit, m, anneal=0.0):
+        """
+
+        Args:
+            m (int): The number of episodes to explore
+        
+        """
+        self.final_choice = 0
+        super(ExploreCommitAgent, self).__init__(bandit, m)
+    
+    def get_action(self, bandit):
+        # Get number of episodes so far
+        t = np.sum(self.k)
+        if t <= self.param * bandit.N:
+            # Uniform exploration
+            return t % bandit.N
+        elif t == self.param * bandit.N + 1:
+            # Commit to an action to exploit from here on
+            self.final_choice = np.argmax(self.Q)
+            return self.final_choice
+        else:
+            # Exploit
+            return self.final_choice
+
+
 class EpsilonGreedyAgent(Agent):
     """
     Chooses a random action epsilon-fraction of the time,
-    and the current best action otherwise.
+    and the estimated best action otherwise.
     """
 
     def __init__(self, bandit, epsilon, anneal=0.0):
@@ -42,12 +72,40 @@ class EpsilonGreedyAgent(Agent):
     def get_action(self, bandit, force_explore=False):
         rand = np.random.random()  # [0.0,1.0)
         if (rand < self.param) or force_explore:
-            action_explore = np.random.randint(bandit.N)  # explore random bandit
+            # Explore random bandit
+            action_explore = np.random.randint(bandit.N)
             return action_explore
         else:
-            # action_greedy = np.argmax(self.Q)  # exploit best current bandit
+            # Exploit best current bandit
+            # Get the best action by first-come, first-served:
+            # action_greedy = np.argmax(self.Q)
+            # or by random tie-break between equal best actions (slower):
             action_greedy = np.random.choice(np.flatnonzero(self.Q == self.Q.max()))
             return action_greedy
+
+
+class FPLAgent(Agent):
+    """
+    Chooses the estimated best action based on cumulative reward 
+    perturbed by exponential random noise.
+
+    FPL = Follow the Perturbed Leader
+    """
+
+    def __init__(self, bandit, lam):
+        self.z = np.zeros(bandit.N)
+        super(FPLAgent, self).__init__(bandit, lam)
+
+    def get_action(self, bandit):
+        # Generate exponential random noise for each arm
+        # Numpy uses beta = 1 / lambda as the parameter
+        self.z = np.random.exponential(1. / self.param, len(self.z))
+        # Choose the action that maximises noise-perturbed value
+        return np.argmax(self.Q + self.z)
+
+    def update_Q(self, action, reward):
+        self.k[action] += 1
+        self.Q[action] += reward  # simply accumulate reward for each action
 
 
 class Exp3Agent(Agent):
@@ -73,30 +131,6 @@ class Exp3Agent(Agent):
         super(Exp3Agent, self).update_Q(action, reward)
         # Update weight of chosen action exponentially to received reward
         self.ws[action] *= np.exp( (self.param * reward) / (self.ps[action] * len(self.ps)) )
-
-
-class FPLAgent(Agent):
-    """
-    Chooses the best action based on cumulative reward perturbed by 
-    exponential random noise.
-
-    FPL = Follow the Perturbed Leader
-    """
-
-    def __init__(self, bandit, lam):
-        self.z = np.zeros(bandit.N)
-        super(FPLAgent, self).__init__(bandit, lam)
-
-    def get_action(self, bandit):
-        # Generate exponential random noise for each arm
-        # Numpy uses beta = 1 / lambda as the parameter
-        self.z = np.random.exponential(1. / self.param, len(self.z))
-        # Choose the action that maximises noise-perturbed value
-        return np.argmax(self.Q + self.z)
-
-    def update_Q(self, action, reward):
-        self.k[action] += 1
-        self.Q[action] += reward  # simply accumulate reward for each action
 
 
 class UCBAgent(Agent):
