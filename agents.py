@@ -21,9 +21,11 @@ class Agent:
         self.k = np.zeros(bandit.N, dtype=np.int)  # number of times action was chosen
         self.Q = np.zeros(bandit.N, dtype=np.float)  # estimated value
 
-    # Update Q action-value using:
-    # Q(a) <- Q(a) + 1/(k+1) * (r(a) - Q(a))
     def update_Q(self, action, reward):
+        """
+        Update Q action-value as a running average of reward:
+        Q(a) <- Q(a) + 1/(k+1) * (r(a) - Q(a))
+        """
         self.k[action] += 1  # update action counter k -> k+1
         self.Q[action] += (1./self.k[action]) * (reward - self.Q[action])
         if abs(self.anneal) > 0 and self.param != 0:  # annealing exploration
