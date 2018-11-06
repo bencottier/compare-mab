@@ -1,6 +1,8 @@
 """
 
-bandits.py (author: Ben Cottier / git: bencottier)
+bandits.py
+
+Author: Anson Wong / git: ankonzoid, Ben Cottier / git: bencottier
 
 Defines bandits in the multi-arm bandit problem.
 

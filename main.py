@@ -1,11 +1,10 @@
 """
 
-main.py  (author: Ben Cottier / git: bencottier)
+main.py
+
+Author: Anson Wong  / git: ankonzoid, Ben Cottier / git: bencottier
 
 Perform experiments with simple multi-armed bandit problems.
-
-Based on the work of Anson Wong:
-https://github.com/ankonzoid/LearningX/tree/master/classical_RL/MAB
 
 """
 from __future__ import print_function, division
@@ -51,7 +50,7 @@ def main():
     epsilon = 0.1  # probability of random exploration (fraction)
     agent_index = {"exc": ExploreCommitAgent, "egd": EpsilonGreedyAgent, 
                    "ex3": Exp3Agent, "fpl": FPLAgent, "ucb": UCBAgent}
-    out_path = "output/comp_gauss"
+    out_path = "output/experiment"
     save_fig = True  # if false -> plot, if true save as file in same directory
 
     # =========================

@@ -1,6 +1,8 @@
 """
 
-agents.py (author: Ben Cottier / git: bencottier)
+agents.py
+
+Author: Anson Wong  / git: ankonzoid, Ben Cottier / git: bencottier
 
 Defines RL agents capable of solving a multi-arm bandit problem.
 

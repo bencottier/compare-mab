@@ -1,7 +1,11 @@
 """
+
 animated_plots.py
 
+Author: Ben Cottier / git: bencottier
+
 Produce and display animated data.
+
 """
 from __future__ import print_function, division
 import numpy as np
