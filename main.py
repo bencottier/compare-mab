@@ -45,7 +45,7 @@ def main():
     r_max = 1  # reward on success
     bandit_probs = [0.10, 0.50, 0.60, 0.80, 0.10,
                     0.25, 0.60, 0.45, 0.75, 0.65]  # success probability
-    N_experiments = 1000  # number of experiments to perform
+    N_experiments = 2000  # number of experiments to perform
     N_episodes = 10000  # number of episodes per experiment
     epsilon = 0.1  # probability of random exploration (fraction)
     agent_index = {"exc": ExploreCommitAgent, "egd": EpsilonGreedyAgent, 

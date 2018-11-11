@@ -20,16 +20,16 @@ class Agent:
         self.param = param
         self.param_init = self.param
         self.anneal = anneal
-        self.k = np.zeros(bandit.N, dtype=np.int)  # number of times action was chosen
+        self.t = np.zeros(bandit.N, dtype=np.int)  # number of times action was chosen
         self.Q = np.zeros(bandit.N, dtype=np.float)  # estimated value
 
     def update_Q(self, action, reward):
         """
         Update Q action-value as a running average of reward:
-        Q(a) <- Q(a) + 1/(k+1) * (r(a) - Q(a))
+        Q(a) <- Q(a) + 1/(t+1) * (r(a) - Q(a))
         """
-        self.k[action] += 1  # update action counter k -> k+1
-        self.Q[action] += (1./self.k[action]) * (reward - self.Q[action])
+        self.t[action] += 1  # update action counter t -> t+1
+        self.Q[action] += (1./self.t[action]) * (reward - self.Q[action])
         if abs(self.anneal) > 0 and self.param != 0:  # annealing exploration
             self.param = max(0, self.param - self.anneal)
 
@@ -51,7 +51,7 @@ class ExploreCommitAgent(Agent):
     
     def get_action(self, bandit):
         # Get number of episodes so far
-        t = np.sum(self.k)
+        t = np.sum(self.t)
         if t <= self.param * bandit.N:
             # Uniform exploration
             return t % bandit.N
@@ -108,7 +108,7 @@ class FPLAgent(Agent):
         return np.argmax(self.Q + self.z)
 
     def update_Q(self, action, reward):
-        self.k[action] += 1
+        self.t[action] += 1
         self.Q[action] += reward  # simply accumulate reward for each action
 
 
@@ -149,14 +149,14 @@ class UCBAgent(Agent):
         super(UCBAgent, self).__init__(bandit, c)
 
     def get_action(self, bandit):
-        t = np.sum(self.k)
+        t = np.sum(self.t)
         if t < bandit.N:
             # Visit all available states initially
-            # This is what would happen anyway in the limit of k -> 0
+            # This is what would happen anyway in the limit of t -> 0
             # For the usual formula below
             # This is a way of avoiding division by 0
             return t  
         else:
             f = 1 + t * (math.log(t))**2
-            v = self.Q + self.param * np.sqrt(2 * math.log(f) * 1. / self.k)
+            v = self.Q + self.param * np.sqrt(2 * math.log(f) * 1. / self.t)
             return np.argmax(v)

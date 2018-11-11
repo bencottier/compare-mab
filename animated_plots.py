@@ -50,9 +50,9 @@ def animate(i, anim, selections, results, values):
 class Animation:
 
     COLOUR_DEFAULT = 'C0'  # 'C0' blue
-    COLOUR_SELECT  = 'C1'  # 'C1' orange
-    COLOUR_SUCCESS = 'C2'  # 'C2' greed
-    COLOUR_FAILURE = 'C3'  # 'C3' red
+    COLOUR_SELECT  = 'C0'  # 'C1' orange
+    COLOUR_SUCCESS = 'C0'  # 'C2' greed
+    COLOUR_FAILURE = 'C0'  # 'C3' red
 
     def __init__(self, selections, results, values, iter_start, iter_end,
             fps=30, speed=2):
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     bandit = Bandit(bandit_probs)
     agent = Exp3Agent(bandit, 0.1)
-    N_episodes = 100
+    N_episodes = 1000
 
     action_history = np.zeros(N_episodes, dtype=np.int32)
     reward_history = np.zeros(N_episodes)
@@ -155,30 +155,30 @@ if __name__ == '__main__':
         weight_history[:, episode + 1] = agent.ws
         prob_history[:, episode] = agent.ps
 
-    anim_weight = BarAnimation(action_history, reward_history, weight_history, 
-            iter_start=0, iter_end=10, speed=4)
+    # anim_weight = BarAnimation(action_history, reward_history, weight_history, 
+    #         iter_start=0, iter_end=10, speed=4)
 
-    ax = plt.gca()
-    plt.ylim([0.95, 1.25])
-    plt.xticks(range(1, bandit.N + 1))
-    # ax.yticks([])
-    plt.xlabel("action")
-    plt.ylabel("weight")
-    ax.yaxis.grid(True)
+    # ax = plt.gca()
+    # plt.ylim([0.95, 1.25])
+    # plt.xticks(range(1, bandit.N + 1))
+    # # ax.yticks([])
+    # plt.xlabel("action")
+    # plt.ylabel("weight")
+    # ax.yaxis.grid(True)
 
-    anim_weight.save("output/graphics/exp3_weight_bar.mp4")
+    # # anim_weight.save("output/graphics/exp3_weight_bar.mp4")
     # plt.show()
 
     anim_prob = BarAnimation(action_history, reward_history, prob_history, 
-            iter_start=0, iter_end=10, speed=4)
+            iter_start=0, iter_end=10, speed=120)
 
     ax = plt.gca()
-    plt.ylim([0.075, 0.125])
+    plt.ylim([0.0, 0.4])
     plt.xticks(range(1, bandit.N + 1))
     # ax.yticks([])
     plt.xlabel("action")
     plt.ylabel("probability")
-    ax.yaxis.grid(True)
+    # ax.yaxis.grid(True)
     
-    anim_prob.save("output/graphics/exp3_prob_bar.mp4")
-    # plt.show()
+    # anim_prob.save("output/graphics/exp3_prob_bar_fast.mp4")
+    plt.show()
