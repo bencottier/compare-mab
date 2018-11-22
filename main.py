@@ -47,7 +47,7 @@ def main():
                     0.50, 0.45, 0.25, 0.10, 0.10]  # success probability
     N_experiments = 2000  # number of experiments to perform
     N_episodes = 10000  # number of episodes per experiment
-    epsilon = 0.1  # probability of random exploration (fraction)
+    param = 0.1  # agent parameter
     agent_index = {"exc": ExploreCommitAgent, "egd": EpsilonGreedyAgent, 
                    "ex3": Exp3Agent, "fpl": FPLAgent, "ucb": UCBAgent}
     out_path = "output/binomial/3"
@@ -60,17 +60,17 @@ def main():
     grand_totals = {}
     # Test out all the different agents
     for agent_type in agent_index.keys():
-        print("Running multi-armed bandits with N_bandits = {}, agent = {}, epsilon = {}".format(
-                N_bandits, agent_type, epsilon))
+        print("Running multi-armed bandits with N_bandits = {}, agent = {}, param = {}".format(
+                N_bandits, agent_type, param))
         reward_history_avg = np.zeros(N_episodes)  # reward history experiment-averaged
         reward_experiment_avg = np.zeros(N_experiments)  # reward history episode-averaged
         action_history_sum = np.zeros((N_episodes, N_bandits))  # sum action history
         for i in range(N_experiments):
             bandit = Bandit(bandit_probs)  # initialize bandits
             if "exc" in agent_type.lower():  # special case for the parameter
-                agent = agent_index[agent_type](bandit, int(N_episodes * epsilon / N_bandits))
+                agent = agent_index[agent_type](bandit, int(N_episodes * param / N_bandits))
             else:
-                agent = agent_index[agent_type](bandit, epsilon)  # initialize agent
+                agent = agent_index[agent_type](bandit, param)  # initialize agent
             (action_history, reward_history) = experiment(agent, bandit, N_episodes)  # perform experiment
 
             if (i + 1) % (N_experiments / 100) == 0:
@@ -105,7 +105,7 @@ def main():
         plt.plot(reward_history_avg)
         plt.xlabel("Episode number")
         plt.ylabel("Rewards collected")
-        plt.title("Bandit reward history averaged over {} experiments (epsilon = {})".format(N_experiments, epsilon))
+        plt.title("Bandit reward history averaged over {} experiments (param = {})".format(N_experiments, param))
         ax = plt.gca()
         ax.set_xscale("log", nonposx='clip')
         plt.xlim([1, N_episodes])
@@ -126,7 +126,7 @@ def main():
                     action_history_sum_plot,
                     linewidth=2.0,
                     label="Bandit #{}".format(i+1))
-        plt.title("Bandit action history averaged over {} experiments (epsilon = {})".format(N_experiments, epsilon))
+        plt.title("Bandit action history averaged over {} experiments (param = {})".format(N_experiments, param))
         plt.xlabel("Episode Number")
         plt.ylabel("Bandit Action Choices (%)")
         plt.legend(loc='upper left', shadow=True, fontsize=8)
@@ -149,7 +149,7 @@ def main():
         center = (bins[:-1] + bins[1:]) / 2
         plt.bar(center, hist, align='center', width=width)
         plt.title("Average experiment reward distribution for {} experiments, "
-                "epsilon = {}".format(N_experiments, epsilon))
+                "param = {}".format(N_experiments, param))
         plt.xlabel("Average experiment reward")
         plt.ylabel("Frequency")
         if save_fig:
@@ -164,7 +164,7 @@ def main():
         f.write("bandit_probs = {}\n".format(bandit_probs))
         f.write("N_experiments = {}\n".format(N_experiments))
         f.write("N_episodes = {}\n".format(N_episodes))
-        f.write("epsilon = {}\n".format(epsilon))
+        f.write("param = {}\n".format(param))
         f.write("\n")
         for agent_type in agent_index.keys():
             f.write("{}\n".format(agent_type))
