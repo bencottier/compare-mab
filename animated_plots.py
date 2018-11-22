@@ -11,6 +11,7 @@ from __future__ import print_function, division
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+import math
 
 
 def animate(i, anim, selections, results, values):
@@ -29,21 +30,21 @@ def animate(i, anim, selections, results, values):
         # Section 1: show current values
         if i_iter == 0:
             anim.value(v)
+    # elif i_iter < sf[1]:
+    #     # Section 2: animate change in auxilliary value by interpolating
+    #     change = np.array([values[0, :, j + 1] - v[0], np.zeros_like(v[1])])
+    #     frame = i_iter - sf[0]
+    #     total_frames = sf[1] - sf[0]
+    #     v_anim = v
+    #     v_anim += frame * change / total_frames
+    #     anim.update(v_anim)
     elif i_iter < sf[1]:
-        # Section 2: animate change in auxilliary value by interpolating
-        change = np.array([values[0, :, j + 1] - v[0], np.zeros_like(v[1])])
-        frame = i_iter - sf[0]
-        total_frames = sf[1] - sf[0]
-        v_anim = v
-        v_anim += frame * change / total_frames
-        anim.update(v_anim)
-    elif i_iter < sf[2]:
         # Section 3: indicate selection
-        if i_iter == sf[1]:
+        if i_iter == sf[0]:
             anim.select(s)
-    elif i_iter < sf[3]:
+    elif i_iter < sf[2]:
         # Section 4: indicate result of selection
-        if i_iter == sf[2]:
+        if i_iter == sf[1]:
             anim.result(s, r)
     else:  # i_iter >= sf[-1]
         # Last section: animate change in value by interpolating
@@ -77,7 +78,7 @@ class Animation:
         self.num_iter = iter_end - iter_start
 
         self.fps = fps  # desired output frame rate
-        section_times = 1./speed * np.array([1, 2, 3, 4, 5])
+        section_times = 1./speed * np.array([1, 2, 3, 4])
         self.section_frames = (self.fps * section_times).astype(np.int32)
         self.frames_per_iter = self.section_frames[-1]
         num_frames = self.frames_per_iter * (self.num_iter + 1)
@@ -140,15 +141,24 @@ class BarAnimation(Animation):
 
 if __name__ == '__main__':
 
-    from agents import EpsilonGreedyAgent, FPLAgent, Exp3Agent
+    from agents import EpsilonGreedyAgent, FPLAgent, Exp3Agent, UCBAgent
     from bandits import Bandit
 
     bandit_probs = [0.10, 0.50, 0.60, 0.80, 0.10,
                     0.25, 0.60, 0.45, 0.75, 0.65]  # success probability
 
     bandit = Bandit(bandit_probs)
-    agent = FPLAgent(bandit, 0.1)
-    N_episodes = 1000
+    agent = UCBAgent(bandit, 1.0)
+    N_episodes = 10000
+
+    def ucb_value(ucb_agent):
+        t = np.sum(ucb_agent.t)
+        if t < len(ucb_agent.Q):
+            return ucb_agent.Q, 0.0
+        else:
+            f = 1 + t * (math.log(t))**2
+            explore = ucb_agent.param * np.sqrt(2 * math.log(f) * 1. / ucb_agent.t)
+            return ucb_agent.Q, explore
 
     action_history = np.zeros(N_episodes, dtype=np.int32)
     reward_history = np.zeros(N_episodes)
@@ -164,33 +174,35 @@ if __name__ == '__main__':
         # Append to history
         action_history[episode] = action
         reward_history[episode] = reward
-        value_history[0, :, episode + 1] = agent.Q + agent.z
-        value_history[1, :, episode + 1] = agent.Q
+
+        ucb_v = ucb_value(agent)
+        value_history[0, :, episode + 1] = ucb_v[0] + ucb_v[1]
+        value_history[1, :, episode + 1] = ucb_v[0]
 
     anim = BarAnimation(action_history, reward_history, value_history, 
-            iter_start=150, iter_end=160, speed=2, num_series=2)
+            iter_start=9990, iter_end=9999, speed=4, num_series=2)
 
     ax = plt.gca()
-    plt.ylim([0.0, 100.0])
+    plt.ylim([0.0, 2.0])
     plt.xticks(range(1, bandit.N + 1))
     # ax.yticks([])
     plt.xlabel("action")
     plt.ylabel("value")
     # ax.yaxis.grid(True)
 
-    anim.save("output/graphics/fpl_q1.mp4")
-    # plt.show()
+    # anim.save("output/graphics/ucb.mp4")
+    plt.show()
 
-    anim = BarAnimation(action_history, reward_history, value_history, 
-            iter_start=200, iter_end=210, speed=2, num_series=2)
+    # anim = BarAnimation(action_history, reward_history, value_history, 
+    #         iter_start=200, iter_end=210, speed=2, num_series=2)
 
-    ax = plt.gca()
-    plt.ylim([0.0, 100.0])
-    plt.xticks(range(1, bandit.N + 1))
-    # ax.yticks([])
-    plt.xlabel("action")
-    plt.ylabel("value")
-    # ax.yaxis.grid(True)
+    # ax = plt.gca()
+    # plt.ylim([0.0, 100.0])
+    # plt.xticks(range(1, bandit.N + 1))
+    # # ax.yticks([])
+    # plt.xlabel("action")
+    # plt.ylabel("value")
+    # # ax.yaxis.grid(True)
     
-    anim.save("output/graphics/fpl_q2.mp4")
-    # plt.show()
+    # anim.save("output/graphics/fpl_q2.mp4")
+    # # plt.show()
