@@ -43,14 +43,14 @@ def main():
     # =========================
     r_min = 0  # reward on failure
     r_max = 1  # reward on success
-    bandit_probs = [0.10, 0.50, 0.60, 0.80, 0.10,
-                    0.25, 0.60, 0.45, 0.75, 0.65]  # success probability
+    bandit_probs = [0.80, 0.75, 0.65, 0.60, 0.60,
+                    0.50, 0.45, 0.25, 0.10, 0.10]  # success probability
     N_experiments = 2000  # number of experiments to perform
     N_episodes = 10000  # number of episodes per experiment
     epsilon = 0.1  # probability of random exploration (fraction)
     agent_index = {"exc": ExploreCommitAgent, "egd": EpsilonGreedyAgent, 
                    "ex3": Exp3Agent, "fpl": FPLAgent, "ucb": UCBAgent}
-    out_path = "output/experiment"
+    out_path = "output/binomial/3"
     save_fig = True  # if false -> plot, if true save as file in same directory
 
     # =========================

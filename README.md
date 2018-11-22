@@ -1,4 +1,4 @@
-# Compare the Bandit
+# Compare MAB
 
 This is an extension/modification of Anson Wong's multi-armed bandit example which you can find [here](https://github.com/ankonzoid/LearningX/tree/master/classical_RL/MAB)
 
@@ -8,7 +8,7 @@ We implement several different agents such as epsilon-greedy, EXP3, and UCB to s
 
 > python main.py
 
-In the default case we train on 1,000 experiments with 10,000 episodes per experiment. The exploring parameter is `epsilon = 0.1` and 10 bandits are intialised with success probabilities of `{0.10, 0.50, 0.60, 0.80, 0.10, 0.25, 0.60, 0.45, 0.75, 0.65}`. Bandit #4 should be selected as the "best" bandit on average, with bandit #9 running second, and bandit #10 as a far third.
+In the default case we train on 2,000 experiments with 10,000 episodes per experiment. The exploring parameter is `0.1` and 10 bandits are intialised with success probabilities of `{0.80, 0.75, 0.65, 0.60, 0.60, 0.50, 0.45, 0.25, 0.10, 0.10}`. These are in order of success to make it easy to track performance. Bandit #1 should be selected as the best on average, with bandit #2 running second, and bandit #3 as a far third.
 
 ### Example Output
 
