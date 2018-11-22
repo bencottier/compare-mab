@@ -124,7 +124,7 @@ def main():
             action_history_sum_plot = 100 * action_history_sum[:,i] / N_experiments
             plt.plot(list(np.array(range(len(action_history_sum_plot)))+1),
                     action_history_sum_plot,
-                    linewidth=5.0,
+                    linewidth=2.0,
                     label="Bandit #{}".format(i+1))
         plt.title("Bandit action history averaged over {} experiments (epsilon = {})".format(N_experiments, epsilon))
         plt.xlabel("Episode Number")
